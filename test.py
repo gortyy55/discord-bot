@@ -31,6 +31,7 @@ async def on_ready():
 
 
 class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
+   Codeactivation = discord.ui.TextInput(label="Vote Code du Ticket", placeholder="eg. LMQ7E", required = True, style = discord.TextStyle.short)
    name = discord.ui.TextInput(label="Nom Prenom", placeholder="eg. Hamid Pettard", required = True, style = discord.TextStyle.short)
    ticket = discord.ui.TextInput(label="les 5 chiffres du ticket", placeholder="eg. 12345", required= True, style=discord.TextStyle.short,max_length=5)
 
@@ -39,17 +40,34 @@ class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
    async def on_submit(self, interaction: discord.Interaction):
      # Check if any of the required fields are empty
 
-        if not self.name.value or not self.ticket.value:
-            await interaction.response.send_message("Error: merci de bien remplir les 2 champs", ephemeral=True)
+        query = "SELECT * FROM codes WHERE code = %s"
+        cursor.execute(query, (self.Codeactivation.value,))
+        result = cursor.fetchone()
+
+        if not self.name.value or not self.Codeactivation.value or not self.ticket.value:
+            await interaction.response.send_message("Error: merci de bien remplir les 3 champs", ephemeral=True)
             return 
         
+        else: 
+            
+         if result :
+             sql = "INSERT INTO participe (Nom, Numero) VALUES (%s, %s)"
+             val = (self.name.value, self.ticket.value)
+             cursor.execute(sql, val)
+             db.commit()
 
-        await interaction.response.send_message("Votre Ticket a Bien etait enregistrer {username}")
+             delete_query = "DELETE FROM codes WHERE code = %s"
+             cursor.execute(delete_query, (self.Codeactivation.value,))
+             db.commit()
+             await interaction.response.send_message("Votre Ticket a Bien etait enregistrer {username}")
 
-        sql = "INSERT INTO participe (Nom, Numero) VALUES (%s, %s)"
-        val = (self.name.value, self.ticket.value)
-        cursor.execute(sql, val)
-        db.commit()
+         else : 
+             await interaction.response.send_message("Votre code est invalide")
+
+            
+             
+
+
  
 
 
