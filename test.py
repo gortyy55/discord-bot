@@ -43,13 +43,14 @@ class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
         query = "SELECT * FROM codes WHERE code = %s"
         cursor.execute(query, (self.Codeactivation.value,))
         result = cursor.fetchone()
-
+        
+        #controle de saisie
         if not self.name.value or not self.Codeactivation.value or not self.ticket.value:
             await interaction.response.send_message("Error: merci de bien remplir les 3 champs", ephemeral=True)
             return 
         
         else: 
-            
+          #si le code d'activation est valide alors le ticket et pris en compte et le code est supprimer de la base de donnée 
          if result :
              sql = "INSERT INTO participe (Nom, Numero) VALUES (%s, %s)"
              val = (self.name.value, self.ticket.value)
@@ -60,9 +61,10 @@ class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
              cursor.execute(delete_query, (self.Codeactivation.value,))
              db.commit()
              await interaction.response.send_message("Votre Ticket a Bien etait enregistrer {username}")
-
+          
+          #si code invalide message d'erreur
          else : 
-             await interaction.response.send_message("Votre code est invalide")
+             await interaction.response.send_message("Votre code est invalide ticker non enregistrer {username}")
 
             
              
@@ -78,7 +80,7 @@ async def ticket(interaction: discord.Interaction):
 
  
 
-
+#generer un code d'actiovation d'un ticket pour celui qui paye
 @client.command()
 async def generate(ctx):
      # Set the required length
@@ -92,7 +94,7 @@ async def generate(ctx):
      await ctx.send(generated_string)
 
 
-
+#verifier si un code d'actiovation est valide ou non
 @client.command()
 async def check(ctx, code):
     # Check if the code exists in the database
