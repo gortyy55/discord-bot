@@ -7,8 +7,8 @@ import asyncio
 import random
 
 db = mysql.connector.connect(
-    host="ragequit.tn",
-    user="",
+    host="",
+    user="Gortyy",
     password="",
     database="Lotto"
 )
@@ -31,46 +31,45 @@ async def on_ready():
 
 
 class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
-   Codeactivation = discord.ui.TextInput(label="Vote Code du Ticket", placeholder="eg. LMQ7E", required = True, style = discord.TextStyle.short)
+   Codeactivation = discord.ui.TextInput(label="Vote Code du Ticket", placeholder="eg. LMQ7E", required = True, style = discord.TextStyle.short,max_length=5)
    name = discord.ui.TextInput(label="Nom Prenom", placeholder="eg. Hamid Pettard", required = True, style = discord.TextStyle.short)
    ticket = discord.ui.TextInput(label="les 5 chiffres du ticket", placeholder="eg. 12345", required= True, style=discord.TextStyle.short,max_length=5)
 
 
 
    async def on_submit(self, interaction: discord.Interaction):
-     # Check if any of the required fields are empty
+    # Check if any of the required fields are empty
+    if not self.name.value or not self.Codeactivation.value or not self.ticket.value:
+        await interaction.response.send_message("Error: Merci de bien remplir les 3 champs.", ephemeral=True)
+        return 
 
-        query = "SELECT * FROM codes WHERE code = %s"
-        cursor.execute(query, (self.Codeactivation.value,))
-        result = cursor.fetchone()
-        
-        #controle de saisie
-        if not self.name.value or not self.Codeactivation.value or not self.ticket.value:
-            await interaction.response.send_message("Error: merci de bien remplir les 3 champs", ephemeral=True)
-            return 
-        
-        else: 
-          #si le code d'activation est valide alors le ticket et pris en compte et le code est supprimer de la base de donnée 
-         if result :
-             sql = "INSERT INTO participe (Nom, Numero) VALUES (%s, %s)"
-             val = (self.name.value, self.ticket.value)
-             cursor.execute(sql, val)
-             db.commit()
+    # Execute SQL query to check if the activation code is valid
+    query = "SELECT * FROM codes WHERE code = %s"
+    cursor.execute(query, (self.Codeactivation.value,))
+    result = cursor.fetchone()
 
-             delete_query = "DELETE FROM codes WHERE code = %s"
-             cursor.execute(delete_query, (self.Codeactivation.value,))
-             db.commit()
-             await interaction.response.send_message("Votre Ticket a Bien etait enregistrer {username}")
-          
-          #si code invalide message d'erreur
-         else : 
-             await interaction.response.send_message("Votre code est invalide ticker non enregistrer {username}")
+    if result:
+        # If the code is valid, insert the participant's data into the database
+        sql = "INSERT INTO participe (Nom, Numero) VALUES (%s, %s)"
+        val = (self.name.value, self.ticket.value)
+        cursor.execute(sql, val)
+        db.commit()
 
-            
-             
+        # Update or delete the code based on the number of available tickets
+        if result[1] == 1:
+            delete_query = "DELETE FROM codes WHERE code = %s"
+            cursor.execute(delete_query, (self.Codeactivation.value,))
+            db.commit()
+            await interaction.response.send_message("Votre ticket a été enregistré avec succès.")
+        else:
+            update_query = "UPDATE codes SET nbrTickets = nbrTickets - 1 WHERE code = %s"
+            cursor.execute(update_query, (self.Codeactivation.value,))
+            db.commit()
+            await interaction.response.send_message("Votre ticket a été enregistré avec succès.")
 
-
- 
+    else:
+        # If the code is invalid, send an error message
+        await interaction.response.send_message("Code d'activation invalide. Ticket non enregistré.")
 
 
 @client.tree.command(name="ticket", description="un ticket")
