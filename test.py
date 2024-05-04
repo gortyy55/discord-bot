@@ -7,8 +7,8 @@ import asyncio
 import random
 
 db = mysql.connector.connect(
-    host="",
-    user="Gortyy",
+    host="ragequit.tn",
+    user="",
     password="",
     database="Lotto"
 )
@@ -82,16 +82,22 @@ async def ticket(interaction: discord.Interaction):
 
 #generer un code d'actiovation d'un ticket pour celui qui paye
 @client.command()
-async def generate(ctx):
-     # Set the required length
+async def generate(ctx , number: int=None):
+     if number == None :
+      await ctx.send("merci de rajouter le nombre de tickets apres la commande")
+      return
+    
+    
+    # Set the required length
      length_of_string = 5
      sample_str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
      # k is an argument which will set the length
      generated_string = ''.join(random.choices(sample_str, k = length_of_string))
-     query = "INSERT INTO codes VALUES (%s)"
-     cursor.execute(query, (generated_string,))
+     query = "INSERT INTO codes VALUES (%s,%s)"
+     cursor.execute(query, (generated_string,number))
      db.commit()
      await ctx.send(generated_string)
+
 
 
 #verifier si un code d'actiovation est valide ou non
