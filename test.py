@@ -56,8 +56,6 @@ async def create_private_channel_with_view(interaction: discord.Interaction):
         if new_channel:
             # Create the view
             view = SimpleView()
-            button = discord.ui.Button(label="Demander une table", style=discord.ButtonStyle.success)
-            view.add_item(button)
             
             # Send the view to the new channel
             await new_channel.send("Demander une table", view=view)
@@ -85,7 +83,7 @@ async def on_ready():
 
 #check if its the right channel for a command
 async def is_channel(ctx):
-  return ctx.channel.id == 1165232857023774811
+  return ctx.channel.id == 1236607661840138260
  
 
 
@@ -126,7 +124,7 @@ class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
             delete_query = "DELETE FROM codes WHERE code = %s"
             cursor.execute(delete_query, (self.Codeactivation.value,))
             db.commit()
-            await interaction.response.send_message("Votre ticket a été enregistré avec succès.")
+            await interaction.response.send_message("Votre ticket a été enregistré avec succès.",delete_after=10)
 
             # Send the filled digits with the date and time to the user in a private message
             
@@ -137,13 +135,15 @@ class TicketModel(discord.ui.Modal, title="Big Win Belgium"):
             cursor.execute(update_query, (self.Codeactivation.value,))
             db.commit()
 
+            await interaction.response.send_message("Votre ticket a été enregistré avec succès.",delete_after=10)
+
             # Send the filled digits with the date and time to the user in a private message
             user = interaction.user
             await user.send(f"Vous avez rempli les chiffres suivants: {self.ticket.value} le {current_datetime}")
 
     else:
         # If the code is invalid, send an error message
-        await interaction.response.send_message("Code d'activation invalide. Ticket non enregistré.")
+        await interaction.response.send_message("Code d'activation invalide. Ticket non enregistré.",delete_after=10)
 
 
 @client.tree.command(name="ticket", description="un ticket")
@@ -206,6 +206,7 @@ async def button2(ctx):
 
 
 @client.command()
+@commands.check(is_channel)
 async def delete_all_channels(ctx):
     try:
         # Define the category ID
@@ -227,6 +228,7 @@ async def delete_all_channels(ctx):
         await ctx.send(f"An error occurred: {e}")
 
 @client.command()
+@commands.check(is_channel)
 async def clear_acceuil(ctx):
     try:
         # Get the channel object
