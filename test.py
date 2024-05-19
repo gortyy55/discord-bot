@@ -7,10 +7,10 @@ import datetime
 import random
 
 db = mysql.connector.connect(
-    host="46.105.28.192",
-    user="Gortyy",
-    password="Testtest",
-    database="Lotto"
+    host="",
+    user="",
+    password="",
+    database=""
 )
 cursor = db.cursor()
 cursor2 = db.cursor()
@@ -266,6 +266,6 @@ async def clear_acceuil(ctx):
 
 async def main():
     async with client:
-        await client.start("MTIzNTg1MjAyMzczMjM3NTU1Mw.GwWhPe.El0pyhm8SXNeT_PaECZ4lndy6q0RYxwKwpfSVM")
+        await client.start("")
 
 asyncio.run(main())
